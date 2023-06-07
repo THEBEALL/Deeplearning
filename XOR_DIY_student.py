@@ -50,46 +50,42 @@ def forward_prop(X,parameters):
 def calculate_cost(y_pred,Y):
     
     # 定义损失函数，均方根或交叉熵
-    cost = np.sqrt(np.sum((y_pred - Y)**2 / y_pred.shape[0]))
+    cost = np.sum((y_pred - Y)**2 / y_pred.shape[0])
     # 注意：返回的cost是标量
     return cost
 #sigmode函数梯度#
-def operator(o, y):
-    d = (o - y) * (1 - o) * o
-    return d
+def dsigmoid(x):
+    return x * (1 - x)
 
-#反向传播，计算梯度并更新
-def backward_prop(X, Y,parameters, learning_rate, cost):
-    
-    # 计算每个参数的梯度，可利用forward的缓存cache
-    y_pred, cache = forward_prop(X, parameters)
+def backward_prop(X, Y,parameters, learning_rate):
+    # Get parameters
     W1 = parameters["W1"]
     b1 = parameters["b1"]
     W2 = parameters["W2"]
     b2 = parameters["b2"]
-    h = cache["A1"]
-    o = cache["A2"]
-    d = operator(o, Y)
-    p = 0.5 * np.power(cost, -0.5)
 
-    dZ2 = d * p
-    dW2 = np.dot(dZ2, h.T) / h.shape[1]
-    db2 = np.sum(dZ2, axis=1, keepdims=True) / h.shape[1]
-    dZ1 = np.dot(W2.T, dZ2) * h * (1 - h)
-    dW1 = np.dot(dZ1, X.T) / X.shape[1]
-    db1 = np.sum(dZ1, axis=1, keepdims=True) / X.shape[1]
+    y_pred, cache = forward_prop(X, parameters)
+    A1 = cache["A1"]
+    A2 = cache["A2"]
 
-    # 参数更新，例如 W1=W1-learning_rate*dW1
-    W1 = W1 - learning_rate * dW1
-    b1 = b1 - learning_rate * db1
-    W2 = W2 - learning_rate * dW2
-    b2 = b2 - learning_rate * db2    
-    # 返回更新后的参数
+    m = X.shape[1]  
+    dZ2 = (1/m) * 2 * (A2 - Y) * dsigmoid(A2)  
+    dW2 = np.dot(dZ2, A1.T)
+    db2 = np.sum(dZ2, axis=1, keepdims=True)
+    
+    dZ1 = np.dot(W2.T, dZ2) * dsigmoid(A1)  
+    dW1 = np.dot(dZ1, X.T)
+    db1 = np.sum(dZ1, axis=1, keepdims=True)
+
+    # Update parameters
+    W1 -= learning_rate * dW1
+    b1 -= learning_rate * db1
+    W2 -= learning_rate * dW2
+    b2 -= learning_rate * db2
 
     new_parameters = {"W1":W1, "b1":b1, "W2":W2, "b2":b2}
 
     return new_parameters
-
 
 # 利用训练完的模型进行预测
 def predict(X, parameters):
@@ -104,7 +100,7 @@ def predict(X, parameters):
 # 主程序
 if __name__ == '__main__':
     X = np.array([[0, 0, 1, 1], [0, 1, 0, 1]], dtype=np.float64)
-    Y = np.array([[0, 1, 1, 0]], dtype=np.int64)
+    Y = np.array([[0, 1, 1, 0]], dtype=np.float64)
 
 
     # 超参数设置
@@ -128,7 +124,7 @@ if __name__ == '__main__':
         cost=calculate_cost(y_pred, Y)
 
         # 梯度下降并更新参数
-        parameters=backward_prop(X, Y,parameters, learning_rate, cost)
+        parameters=backward_prop(X, Y,parameters, learning_rate)
         
         cost_iter.append(cost)
         
@@ -152,9 +148,9 @@ if __name__ == '__main__':
     
 
     # 绘制损失函数随迭代次数变化的曲线图，cost_iter, num_of_iters
-    # plt.plot(range(num_of_iters), cost_iter)
-    # plt.title('RMSE of Datasets') #此处可以更改名字#
-    # plt.xlabel('Num')
-    # plt.ylabel('Cost')
-    # plt.show()
+    plt.plot(range(num_of_iters), cost_iter)
+    plt.title('RMSE of Datasets') #此处可以更改名字#
+    plt.xlabel('Num')
+    plt.ylabel('Cost')
+    plt.show()
     
