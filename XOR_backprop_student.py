@@ -214,9 +214,9 @@ if __name__ == '__main__':
     # print(init_params["W1"])
 
     # # # 绘制损失函数随迭代次数变化的曲线图，cost_iter, num_of_iters
-    # plt.plot(range(num_of_iters), cost_iter)
-    # plt.title('RMSE of Datasets') #此处可以更改名字#
-    # plt.xlabel('Num')
-    # plt.ylabel('Cost')
-    # plt.show()
+    plt.plot(range(num_of_iters), cost_iter)
+    plt.title('RMSE of Datasets') #此处可以更改名字#
+    plt.xlabel('Num')
+    plt.ylabel('Cost')
+    plt.show()
     
